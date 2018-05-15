@@ -11,7 +11,7 @@
 int16_t AcX, AcY, AcZ, GyX, GyY, GyZ;
 float Acc[2];
 float Gy[3];
-float Angle[2];
+float Angle[2]; // contains angle values for pitch and roll
 long tiempo_prev;
 float dt;
 
@@ -28,10 +28,10 @@ void setup()
 void loop() {
   readValues();
   udp.beginPacket("192.168.2.3", 8088);
-  for(int i = 0; i < 2; i++){
+  for(int i = 0; i < 2; i++){ // loop through angles array
    uint8_t *f_array;
    f_array = reinterpret_cast<uint8_t*>(&Angle[i]);
-    for(int i = 0; i<4; i++){
+    for(int i = 0; i<4; i++){ // for every byte in the float
       udp.write(f_array[i]);  
     }  
   }
@@ -43,7 +43,7 @@ void wiFiSetup(){
   IPAddress gateway(192, 168, 2, 1); 
   IPAddress subnet(255, 255, 255, 0); 
   WiFi.config(ip, gateway, subnet);
-  WiFi.begin("culo", "256864-casa");
+  WiFi.begin("", "");
   while (WiFi.status() != WL_CONNECTED) { 
     delay(500);
     Serial.print(".");
@@ -54,7 +54,7 @@ void wiFiSetup(){
 }
 
 void mpuSetup(){
-  Wire.begin(4,5); // D2(GPIO4)=SDA / D1(GPIO5)=SCL
+  Wire.begin(4,5); // D1=SDA / D2=SCL
   Wire.beginTransmission(MPU);
   Wire.write(0x6B);
   Wire.write(0);
@@ -81,14 +81,14 @@ void readValues(){
    GyY=Wire.read()<<8|Wire.read();
    GyZ=Wire.read()<<8|Wire.read();
  
-   //Calculo del angulo del Giroscopio
+   
    Gy[0] = GyX/G_R;
    Gy[1] = GyY/G_R;
    Gy[2] = GyZ/G_R;
 
    dt = (millis() - tiempo_prev) / 1000.0;
    tiempo_prev = millis();
-   //Aplicar el Filtro Complementario
+   // Apply complementary filter
    Angle[0] = 0.98 *(Angle[0]+Gy[0]*dt) + 0.02*Acc[0];
    Angle[1] = 0.98 *(Angle[1]+Gy[1]*dt) + 0.02*Acc[1];
    delay(2);
