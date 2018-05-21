@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 
-servoXpin = 11
-servoYpin = 13
+servoXpin = 13
+servoYpin = 15
 servoY = 0
 servoX = 0
 
